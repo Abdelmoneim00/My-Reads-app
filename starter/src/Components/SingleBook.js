@@ -1,36 +1,53 @@
-import React from "react";
+import React, { useRef } from "react";
+import { update, get } from '../BooksAPI';
 
+export default function SingleBook({ imageLinks, title, authors, shelf, id, setBooks }) {
+    const selectForm = useRef(null);
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const newShelf = e.target.value;
+        const newValue = await get(id);
+        newValue.shelf = newShelf;
+        await update(id, newShelf);
+        setBooks(oldBooks => {
+            const newResult = oldBooks.filter(book => book.id !== id);
+            return [...newResult, newValue]
+        })
 
-export default function SingleBook(props) {
-
+    }
+    const image = !imageLinks ? "" : (`url(${imageLinks.thumbnail})`);
     return (
-        <div className="book">
-            <div className="book-top">
-                <div className="book-cover"
-                    style={{
-                        width: 128,
-                        height: 193,
-                        backgroundImage:
-                            'url("http://books.google.com/books/content?id=uu1mC6zWNTwC&printsec=frontcover&img=1&zoom=1&imgtk=AFLRE73pGHfBNSsJG9Y8kRBpmLUft9O4BfItHioHolWNKOdLavw-SLcXADy3CPAfJ0_qMb18RmCa7Ds1cTdpM3dxAGJs8zfCfm8c6ggBIjzKT7XR5FIB53HHOhnsT7a0Cc-PpneWq9zX&source=gbs_api")',
-                    }}
-                ></div>
-                <div className="book-shelf-changer">
-                    <select>
-                        <option value="none" disabled>
-                            Move to...
-                        </option>
-                        <option value="currentlyReading">
-                            Currently Reading
-                        </option>
-                        <option value="wantToRead">Want to Read</option>
-                        <option value="read">Read</option>
-                        <option value="none">None</option>
-                    </select>
+        <li>
+            <div className="book">
+                <div className="book-top">
+                    <div
+                        className="book-cover"
+                        style={{
+                            width: 128,
+                            height: 193,
+                            backgroundImage: `${image}`,
+                        }}
+                    ></div>
+                    <div className="book-shelf-changer">
+                        <form ref={selectForm} >
+                            <select value={shelf} onChange={(e) => handleSubmit(e)}>
+                                <option value="none" disabled>
+                                    Move to...
+                                </option>
+                                <option value="currentlyReading">Currently Reading</option>
+                                <option value="wantToRead">Want to Read</option>
+                                <option value="read">Read</option>
+                                <option value="noValue">None</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+                <div className="book-title">{title} </div>
+                <div className="book-authors">
+                    {authors && authors.map((author) => `${author}. `)}
                 </div>
             </div>
-            <div className="book-title">1776</div>
-            <div className="book-authors">David McCullough</div>
-        </div>
-    )
+        </li>
+    );
 }
